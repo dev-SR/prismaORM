@@ -6,6 +6,7 @@
 		- [2. Model data in the Prisma schema](#2-model-data-in-the-prisma-schema)
 		- [3. Run a migration](#3-run-a-migration)
 		- [4. Explore Prisma Client](#4-explore-prisma-client)
+		- [5. Prisma Studio Tour](#5-prisma-studio-tour)
 
 ## Quickstart
 
@@ -80,6 +81,8 @@ model Post {
 
 ### 3. Run a migration
 
+Config database url in `.env`:
+
 ```bash
 DATABASE_URL="postgresql://postgres:postgresx@localhost:5432/postgresdb"
 ```
@@ -132,3 +135,12 @@ yarn dev
 ```
 
 May need to run `npx prisma generate` to load schema definitions.
+
+
+### 5. Prisma Studio Tour
+
+Run $ `npx prisma studio` in terminal.
+
+<div align="center">
+<img src="img/sps.jpg" alt="sps.jpg" width="400px">
+</div>
