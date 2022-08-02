@@ -1,0 +1,20 @@
+{
+	"name": "PrismaORM",
+	"version": "1.0.0",
+	"main": "index.js",
+	"author": "Soikat Rahman <hello.dev.sr@gmail.com>",
+	"license": "MIT",
+	"scripts": {
+		"dev": "nodemon script.ts"
+	},
+	"devDependencies": {
+		"@types/node": "^18.6.3",
+		"nodemon": "^2.0.19",
+		"prisma": "^4.1.1",
+		"ts-node": "^10.9.1",
+		"typescript": "^4.7.4"
+	},
+	"dependencies": {
+		"@prisma/client": "^4.1.1"
+	}
+}
