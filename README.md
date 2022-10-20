@@ -90,6 +90,7 @@ model User {
   id    Int     @id @default(autoincrement())
   email String  @unique
   name  String?
+  //computed field ; not a part of table
   posts Post[]
 }
 
@@ -98,8 +99,9 @@ model Post {
   title     String
   content   String?
   published Boolean @default(false)
-  author    User    @relation(fields: [authorId], references: [id])
   authorId  Int
+  //computed field ; not a part of table
+  author    User    @relation(fields: [authorId], references: [id])
 }
 ```
 
@@ -164,7 +166,7 @@ May need to run `npx prisma generate` to load schema definitions.
 
 ### 5. Prisma Studio Tour
 
-Run $ `npx prisma studio` in terminal.
+Run `npx prisma studio` in terminal.
 
 <div align="center">
 <img src="img/sps.jpg" alt="sps.jpg" width="400px">
@@ -331,21 +333,6 @@ The following Prisma schema includes every type of relation:
   <img src="img/rel.jpg" alt="rel.jpg" width="800px">
 </div>
 
-```prisma
-model Post {
-  id       Int       @id @default(autoincrement())
-  // Other fields
-  comments Comment[] // A post can have many comments
-}
-
-model Comment {
-  id     Int
-  // Other fields
-  Post   Post? @relation(fields: [postId], references: [id]) // A comment can have one post
-  postId Int?
-}
-```
-
 #### 🚀🚀One-to-many relations
 
 One-to-many (1-n) relations refer to relations where one record on one side of the relation can be connected to zero or more records on the other side.
@@ -353,13 +340,15 @@ One-to-many (1-n) relations refer to relations where one record on one side of t
 ```prisma
 model User {
   id    Int    @id @default(autoincrement())
+  //computed field:1->n: "a user can have zero or more posts"
   posts Post[]
 }
 
 model Post {
   id       Int  @id @default(autoincrement())
-  author   User @relation(fields: [authorId], references: [id])
   authorId Int
+  //computed field:n->1: "a post must always have an author"
+  author   User @relation(fields: [authorId], references: [id])
 }
 ```
 
@@ -376,7 +365,7 @@ CREATE TABLE "Post" (
 );
 ```
 
-> Note The `posts` field does not "manifest" in the underlying database schema. On the other side of the relation, the annotated relation field `author` and its relation scalar `authorId` represent the side of the relation that stores the `foreign key` in the underlying database.
+> Note on `computed fields`: The `posts` field does not "manifest" in the underlying database schema. On the other side of the relation, the annotated relation field `author` and its relation scalar `authorId` represent the side of the relation that stores the `foreign key` in the underlying database.
 
 This one-to-many relation expresses the following:
 
@@ -399,7 +388,7 @@ model Post {
 }
 ```
 
-**Required and optional relation fields in one-to-many relations:**In the following example, you can create a Post without assigning a User:
+**Required and optional relation fields in one-to-many relations:** In the following example, you can create a Post without assigning a User:
 
 ```prisma
 model User {
@@ -425,19 +414,21 @@ One-to-one (1-1) relations refer to relations where at most one record can be co
 ```prisma
 model User {
   id      Int      @id @default(autoincrement())
+  //computed field: "a user can have zero or one profiles" (because the profile field is optional on User)
   profile Profile? // No relation scalar - must be optional
 }
 
 model Profile {
   id     Int  @id @default(autoincrement())
-  user   User @relation(fields: [userId], references: [id])
   userId Int  @unique // relation scalar field (used in the `@relation` attribute above)
+  //computed field: "a profile must always be connected to one user"
+  user   User @relation(fields: [userId], references: [id])
 }
 ```
 
-In a one-to-one relation, the side of the relation without a relation scalar (the field representing the foreign key in the database) **must be optional**:
+In a one-to-one relation, the side of the relation without a relation scalar (the field representing the `foreign key` in the database) **must be optional**:
 
-The `userId` relation scalar is a direct representation of the foreign key in the underlying database. This one-to-one relation expresses the following:
+The `userId` relation scalar is a direct representation of the `foreign key` in the underlying database. This one-to-one relation expresses the following:
 
 - "a user can have zero or one profiles" (because the profile field is optional on User)
 - "a profile must always be connected to one user"
