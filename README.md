@@ -36,6 +36,7 @@
       - [Get All with Relations](#get-all-with-relations)
       - [Select fields](#select-fields)
       - [Filtering and sorting](#filtering-and-sorting)
+  - [Handling exceptions and errors](#handling-exceptions-and-errors)
 
 ## Quickstart
 
@@ -786,7 +787,6 @@ There are two ways to create or update a single record and multiple related reco
 
 For more feature like `Connect an existing record`,`Connect or create a record`, `Disconnect related records` etc..see the documentation.
 
-
 ### 👉READ
 
 #### Get All
@@ -823,3 +823,39 @@ const getUser = await prisma.user.findUnique({
 #### Filtering and sorting
 
 - [https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting](https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting)
+
+## Handling exceptions and errors
+
+- [https://www.prisma.io/docs/concepts/components/prisma-client/handling-exceptions-and-errors](https://www.prisma.io/docs/concepts/components/prisma-client/handling-exceptions-and-errors)
+
+```typescript
+import { PrismaClient, Prisma } from '@prisma/client'
+
+const client = new PrismaClient()
+
+try {
+  await client.user.create({ data: { email: 'alreadyexisting@mail.com' } })
+} catch (e) {
+  if (e instanceof Prisma.PrismaClientKnownRequestError) {
+    // The .code property can be accessed in a type-safe manner
+    if (e.code === 'P2002') {
+      console.log(
+        'There is a unique constraint violation, a new user cannot be created with this email'
+      )
+    }
+  }
+  throw e
+}
+
+
+// Nestjs Example:
+  try {
+   await this.prismaService.category.create({ data: { ...data } });
+  } catch (e) {
+   if (e instanceof Prisma.PrismaClientKnownRequestError) {
+    if (e.code === 'P2002') {
+     return new ConflictException('Category already exists');
+    }
+   }
+  }
+```
