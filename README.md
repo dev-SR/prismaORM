@@ -16,10 +16,10 @@
       - [Defining an index](#defining-an-index)
       - [🥂Defining enums](#defining-enums)
     - [🌟🌟Relation fields](#relation-fields)
-      - [🚀🚀One-to-many relations](#one-to-many-relations)
-      - [🚀🚀One-to-one relations](#one-to-one-relations)
+      - [🚀One-to-many relations](#one-to-many-relations)
+      - [🚀One-to-one relations](#one-to-one-relations)
         - [Choosing which side should store the foreign key in a 1-1](#choosing-which-side-should-store-the-foreign-key-in-a-1-1)
-      - [🚀🚀Many-to-many relations](#many-to-many-relations)
+      - [🚀Many-to-many relations](#many-to-many-relations)
         - [Implicit many-to-many relations](#implicit-many-to-many-relations)
       - [🚀Self-relations](#self-relations)
         - [One-to-one self-relations](#one-to-one-self-relations)
@@ -31,6 +31,11 @@
       - [Create a single record](#create-a-single-record)
       - [🥦Create multiple records🥦](#create-multiple-records)
       - [🍠🍠Create a related record](#create-a-related-record)
+    - [👉READ](#read)
+      - [Get All](#get-all)
+      - [Get All with Relations](#get-all-with-relations)
+      - [Select fields](#select-fields)
+      - [Filtering and sorting](#filtering-and-sorting)
 
 ## Quickstart
 
@@ -254,6 +259,7 @@ model User {
 - [prisma-schema-reference#default](https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#default)
 
 -
+
 You can define default values for scalar fields of your models using the @default  attribute:
 
 **Default values can be**:
@@ -333,7 +339,7 @@ The following Prisma schema includes every type of relation:
   <img src="img/rel.jpg" alt="rel.jpg" width="800px">
 </div>
 
-#### 🚀🚀One-to-many relations
+#### 🚀One-to-many relations
 
 One-to-many (1-n) relations refer to relations where one record on one side of the relation can be connected to zero or more records on the other side.
 
@@ -369,8 +375,8 @@ CREATE TABLE "Post" (
 
 This one-to-many relation expresses the following:
 
-- "a user can have zero or more posts"
-- "a post must always have an author"
+- `"a user can have zero or more posts"`
+- `"a post must always have an author"`
 
 In the previous example, the `author` relation field of the `Post` model references the `id` field of the `User` model. **You can also reference a different field**. In this case, you need to mark the field with the `@unique` attribute, to guarantee that there is only a single `User` connected to each `Post`. In the following example, the `author` field references an email field in the `User` model, which is marked with the `@unique` attribute:
 
@@ -405,7 +411,7 @@ model Post {
 
 **Comparing one-to-one and one-to-many relations:** In relational databases, the main difference between a `1-1` and a `1-n`-relation is that in a `1-1`-relation the foreign key must have a `UNIQUE` constraint defined on it.
 
-#### 🚀🚀One-to-one relations
+#### 🚀One-to-one relations
 
 One-to-one (1-1) relations refer to relations where at most one record can be connected on both sides of the relation. In the example below, there is a one-to-one relation between User and Profile:
 
@@ -430,8 +436,8 @@ In a one-to-one relation, the side of the relation without a relation scalar (th
 
 The `userId` relation scalar is a direct representation of the `foreign key` in the underlying database. This one-to-one relation expresses the following:
 
-- "a user can have zero or one profiles" (because the profile field is optional on User)
-- "a profile must always be connected to one user"
+- `"a user can have zero or one profiles"` (because the profile field is optional on User)
+- `"a profile must always be connected to one user"`
 
 The following example demonstrates how to create a 1-1 relation in SQL:
 
@@ -480,7 +486,7 @@ model Profile {
 }
 ```
 
-#### 🚀🚀Many-to-many relations
+#### 🚀Many-to-many relations
 
 Many-to-many (m-n) relations refer to relations where zero or more records on one side of the relation can be connected to zero or more records on the other side of the relation.
 
@@ -507,7 +513,7 @@ model Category {
 
 #### 🚀Self-relations
 
-A relation field can also reference its own model, in this case the relation is called a self-relation. Self-relations can be of any cardinality, 1-1, 1-n and m-n.
+A relation field can also reference its own model, in this case the relation is called a self-relation. Self-relations can be of any cardinality, 1-1, 1-n and m-n.Successor
 
 [relations/self-relations](https://www.prisma.io/docs/concepts/components/prisma-schema/relations/self-relations)
 
@@ -517,16 +523,55 @@ A relation field can also reference its own model, in this case the relation is 
 model User {
   id          Int     @id @default(autoincrement())
   name        String?
+  // self-relation
   successorId Int?    @unique
-  successor   User?   @relation("BlogOwnerHistory", fields: [successorId], references: [id])
-  predecessor User?   @relation("BlogOwnerHistory")
+  Successor   User?   @relation("BlogOwnerHistory", fields: [successorId], references: [id])
+  Predecessor User?   @relation("BlogOwnerHistory")
 }
 ```
 
+> Both `Successor` and `Predecessor` computed fields are needed to model the one-to-one self-relation.
+
 This relation expresses the following:
 
-- "a user can have one or zero predecessors" (for example, Sarah is Mary's predecessor as blog owner)
-- "a user can have one or zero successors" (for example, Mary is Sarah's successor as blog owner)
+- `"a user can have one or zero predecessors"` (for example, Sarah is Mary's Predecessor as blog owner)
+- `"a user can have one or zero successors"` (for example, Mary is Sarah's Successor as blog owner)
+
+Another Example:
+
+```prisma
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  // self-relation
+  parentId String?
+  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryToCategory")
+}
+```
+
+Data Table:
+
+| id  | name               | parentId |
+| --- | ------------------ | -------- |
+| 1   | Laptop             | null     |
+| 2   | All-In-One  Laptop | 1        |
+
+Querying all categories with their parent:
+
+```ts
+findAll() {
+  return await  this.prismaService.category.findMany({
+   include: {
+    children: true
+   },
+   where: {
+    parentId: null
+    // skip children category; children will be fetched using `include`
+   }
+  });
+}
+```
 
 ##### One-to-many self relations
 
@@ -701,7 +746,6 @@ async function main() {
 
 You can create a record and one or more related records at the same time. The following query creates a User record and two related Post records:
 
-
 ```typescript
 async function main() {
  const user = await prisma.user.create({
@@ -741,3 +785,41 @@ There are two ways to create or update a single record and multiple related reco
 - Use a nested `createMany`  query
 
 For more feature like `Connect an existing record`,`Connect or create a record`, `Disconnect related records` etc..see the documentation.
+
+
+### 👉READ
+
+#### Get All
+
+```typescript
+async function main() {
+ const users = await prisma.user.findMany();
+ console.log(users);
+}
+```
+
+#### Get All with Relations
+
+- [https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries)
+
+Use `include`  to include related records, such as a `user's posts` or `profile`, in the query response.
+Use a nested select  to include specific fields from a related record. You can also nest select inside an include.
+
+```typescript
+const getUser = await prisma.user.findUnique({
+  where: {
+    id: 19,
+  },
+  include: {
+    posts: true,
+  },
+})
+```
+
+#### Select fields
+
+- [https://www.prisma.io/docs/concepts/components/prisma-client/select-fields](https://www.prisma.io/docs/concepts/components/prisma-client/select-fields)
+
+#### Filtering and sorting
+
+- [https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting](https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting)
