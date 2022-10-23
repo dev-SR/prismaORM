@@ -859,3 +859,5 @@ try {
    }
   }
 ```
+
+> `await` is must
