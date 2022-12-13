@@ -860,4 +860,6 @@ try {
   }
 ```
 
+-  [See all Error Code](https://www.prisma.io/docs/reference/api-reference/error-reference#error-codes)
+
 > `await` is must
