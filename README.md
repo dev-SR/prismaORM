@@ -35,6 +35,7 @@
       - [Get All](#get-all)
       - [Get All with Relations](#get-all-with-relations)
       - [Select fields](#select-fields)
+        - [Relation Count](#relation-count)
       - [Pagination Example](#pagination-example)
       - [Filtering and sorting](#filtering-and-sorting)
   - [Handling exceptions and errors](#handling-exceptions-and-errors)
@@ -821,7 +822,9 @@ const getUser = await prisma.user.findUnique({
 
 - [https://www.prisma.io/docs/concepts/components/prisma-client/select-fields](https://www.prisma.io/docs/concepts/components/prisma-client/select-fields)
 
-Relation Count:
+##### Relation Count
+
+- [https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#relation-count](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#relation-count)
 
 ```typescript
 const cat = await prisma.category.findUnique({
@@ -834,6 +837,30 @@ const cat = await prisma.category.findUnique({
        }
       }
      });
+```
+
+```typescript
+   const category = await prisma.category.findUniqueOrThrow({
+    where: { id },
+    select: {
+     _count: {
+      select: {
+       Product: true
+      }
+     },
+     Product: {
+      skip: skip,
+      take: limit,
+      select: {
+       id: true,
+       name: true,
+       price: true,
+       createdAt: true,
+       updatedAt: true
+      }
+     }
+    }
+   });
 ```
 
 #### Pagination Example
