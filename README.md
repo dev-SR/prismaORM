@@ -35,6 +35,7 @@
       - [Get All](#get-all)
       - [Get All with Relations](#get-all-with-relations)
       - [Select fields](#select-fields)
+      - [Pagination Example](#pagination-example)
       - [Filtering and sorting](#filtering-and-sorting)
   - [Handling exceptions and errors](#handling-exceptions-and-errors)
 
@@ -820,6 +821,68 @@ const getUser = await prisma.user.findUnique({
 
 - [https://www.prisma.io/docs/concepts/components/prisma-client/select-fields](https://www.prisma.io/docs/concepts/components/prisma-client/select-fields)
 
+Relation Count:
+
+```typescript
+const cat = await prisma.category.findUnique({
+      where: { id },
+      select: {
+       _count: {
+        select: {
+         Product: true
+        }
+       }
+      }
+     });
+```
+
+#### Pagination Example
+
+```typescript
+  const products = await prisma.category.findUnique({
+   where: { id },
+   select: {
+    Product: {
+     skip: 0,
+     take: 10
+    }
+   }
+  });
+```
+
+```typescript
+handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
+ const page = Number(req.query.page) || 1;
+ const limit = Number(req.query.limit) || 3;
+ const skip = (page - 1) * limit;
+
+ const [posts, count] = await prisma.$transaction([
+  prisma.post.findMany({
+   skip,
+   take: limit,
+   orderBy: {
+    updatedAt: 'desc'
+   }
+  }),
+  prisma.post.count()
+ ]);
+
+ const totalPages = Math.ceil(count / limit);
+ const hasMore = page < totalPages;
+ const nextPage = hasMore ? page + 1 : null;
+ const prevPage = page > 1 ? page - 1 : null;
+ const links = {
+  nextPage,
+  prevPage,
+  hasMore,
+  totalPages
+ };
+
+ res.json({ posts, links });
+});
+
+```
+
 #### Filtering and sorting
 
 - [https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting](https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting)
@@ -860,6 +923,6 @@ try {
   }
 ```
 
--  [See all Error Code](https://www.prisma.io/docs/reference/api-reference/error-reference#error-codes)
+- [See all Error Code](https://www.prisma.io/docs/reference/api-reference/error-reference#error-codes)
 
 > `await` is must
